@@ -1,9 +1,11 @@
 // @flow
-
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 
 import VideoLayout from '../../../../modules/UI/videolayout/VideoLayout';
+import DocumentPiP from '../../always-on-top/document-pip';
+import { getConferenceName } from '../../base/conference';
 import { VIDEO_TYPE } from '../../base/media';
 import { getLocalParticipant } from '../../base/participants';
 import { Watermarks } from '../../base/react';
@@ -65,6 +67,11 @@ type Props = {
      * Whether or not the filmstrip is resizable.
      */
     _resizableFilmstrip: boolean,
+
+    /**
+     * The conference name.
+     */
+    _roomName: string,
 
     /**
      * Whether or not to show dominant speaker badge.
@@ -149,6 +156,11 @@ class LargeVideo extends Component<Props> {
         this._clearTapTimeout = this._clearTapTimeout.bind(this);
         this._onDoubleTap = this._onDoubleTap.bind(this);
         this._updateLayout = this._updateLayout.bind(this);
+        this._closePiP = this._closePiP.bind(this);
+        this._showPiP = this._showPiP.bind(this);
+
+        window.addEventListener('blur', this._showPiP);
+        window.addEventListener('focus', this._closePiP);
     }
 
     /**
@@ -184,6 +196,16 @@ class LargeVideo extends Component<Props> {
     }
 
     /**
+     * Implements {@code Component#componentWillUnmount}.
+     *
+     * @inheritdoc
+     */
+    componentWillUnmount() {
+        window.removeEventListener('blur', this._showPiP);
+        window.removeEventListener('focus', this._closePiP);
+    }
+
+    /**
      * Implements React's {@link Component#render()}.
      *
      * @inheritdoc
@@ -201,52 +223,104 @@ class LargeVideo extends Component<Props> {
         const className = `videocontainer${_isChatOpen ? ' shift-right' : ''}`;
 
         return (
-            <div
-                className = { className }
-                id = 'largeVideoContainer'
-                ref = { this._containerRef }
-                style = { style }>
-                <SharedVideo />
-                {_whiteboardEnabled && <Whiteboard />}
-                <div id = 'etherpad' />
-
-                <Watermarks />
-
+            <div id = 'mainLargeVideoContainer'>
                 <div
-                    id = 'dominantSpeaker'
-                    onTouchEnd = { this._onDoubleTap }>
-                    <div className = 'dynamic-shadow' />
-                    <div id = 'dominantSpeakerAvatarContainer' />
-                </div>
-                <div id = 'remotePresenceMessage' />
-                <span id = 'remoteConnectionMessage' />
-                <div id = 'largeVideoElementsContainer'>
-                    <div id = 'largeVideoBackgroundContainer' />
-                    {/*
-                      * FIXME: the architecture of elements related to the large
-                      * video and the naming. The background is not part of
-                      * largeVideoWrapper because we are controlling the size of
-                      * the video through largeVideoWrapper. That's why we need
-                      * another container for the background and the
-                      * largeVideoWrapper in order to hide/show them.
-                      */}
+                    className = { className }
+                    id = 'largeVideoContainer'
+                    ref = { this._containerRef }
+                    style = { style }>
+                    <SharedVideo />
+                    {_whiteboardEnabled && <Whiteboard />}
+                    <div id = 'etherpad' />
+
+                    <Watermarks />
+
                     <div
-                        id = 'largeVideoWrapper'
-                        onTouchEnd = { this._onDoubleTap }
-                        ref = { this._wrapperRef }
-                        role = 'figure' >
-                        { _displayScreenSharingPlaceholder ? <ScreenSharePlaceholder /> : <video
-                            autoPlay = { !_noAutoPlayVideo }
-                            id = 'largeVideo'
-                            muted = { true }
-                            playsInline = { true } /* for Safari on iOS to work */ /> }
+                        id = 'dominantSpeaker'
+                        onTouchEnd = { this._onDoubleTap }>
+                        <div className = 'dynamic-shadow' />
+                        <div id = 'dominantSpeakerAvatarContainer' />
                     </div>
+                    <div id = 'remotePresenceMessage' />
+                    <span id = 'remoteConnectionMessage' />
+                    <div id = 'largeVideoElementsContainer'>
+                        <div id = 'largeVideoBackgroundContainer' />
+                        {/*
+                        * FIXME: the architecture of elements related to the large
+                        * video and the naming. The background is not part of
+                        * largeVideoWrapper because we are controlling the size of
+                        * the video through largeVideoWrapper. That's why we need
+                        * another container for the background and the
+                        * largeVideoWrapper in order to hide/show them.
+                        */}
+                        <div
+                            id = 'largeVideoWrapper'
+                            onTouchEnd = { this._onDoubleTap }
+                            ref = { this._wrapperRef }
+                            role = 'figure' >
+                            { _displayScreenSharingPlaceholder ? <ScreenSharePlaceholder /> : <video
+                                autoPlay = { !_noAutoPlayVideo }
+                                id = 'largeVideo'
+                                muted = { true }
+                                playsInline = { true } /* for Safari on iOS to work */ /> }
+                        </div>
+                    </div>
+                    { interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
+                        || <Captions /> }
+                    {_showDominantSpeakerBadge && <StageParticipantNameLabel />}
                 </div>
-                { interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
-                    || <Captions /> }
-                {_showDominantSpeakerBadge && <StageParticipantNameLabel />}
             </div>
         );
+    }
+
+    /**
+     * Shows the picture in picture window.
+     *
+     * @returns {void}
+     */
+    async _showPiP() {
+        if (this._pipSession || !documentPictureInPicture) {
+            return;
+        }
+
+        try {
+            this._pipSession = await documentPictureInPicture.requestWindow({
+                copyStyleSheets: true,
+                initialAspectRatio: 16 / 9,
+                lockAspectRatio: true
+            });
+
+            this._pipSession.document.title = this.props._roomName;
+            this._pipSession.window.onunload = this._closePiP;
+            this._pipSession.window.document.body.style = 'margin: 0; background-color: #000';
+
+            this._pipSession.window.document.body.append(document.querySelector('#largeVideoContainer'));
+
+            // ReactDOM.render(<DocumentPiP />, this._pipSession.window.document.body);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /** .....................
+     * Closes the picture in picture window.
+     *
+     * @returns {void}
+     */
+    _closePiP() {
+        const pipWindow = this._pipSession?.window;
+
+        if (!pipWindow) {
+            return;
+        }
+
+        const mainContainer = document.querySelector('#mainLargeVideoContainer');
+        const videoContainer = pipWindow.document.querySelector('#largeVideoContainer');
+
+        mainContainer.append(videoContainer);
+
+        pipWindow.close();
+        this._pipSession = undefined;
     }
 
     _updateLayout: () => void;
@@ -380,6 +454,7 @@ function _mapStateToProps(state) {
         _localParticipantId: localParticipantId,
         _noAutoPlayVideo: testingConfig?.noAutoPlayVideo,
         _resizableFilmstrip: isFilmstripResizable(state),
+        _roomName: getConferenceName(state),
         _seeWhatIsBeingShared: seeWhatIsBeingShared,
         _showDominantSpeakerBadge: !hideDominantSpeakerBadge,
         _verticalFilmstripWidth: verticalFilmstripWidth.current,

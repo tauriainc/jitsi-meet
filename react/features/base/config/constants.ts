@@ -90,3 +90,13 @@ export const DEFAULT_PRIVACY_URL = 'https://jitsi.org/meet/privacy';
  * The URL at which the help centre is available to the user.
  */
 export const DEFAULT_HELP_CENTRE_URL = 'https://web-cdn.jitsi.net/faq/meet-faq.html';
+
+/**
+ * The toolbar buttons to show on AoT window.
+ */
+export const AOT_BUTTONS = [ 'microphone', 'camera', 'hangup' ];
+
+/**
+ * The toolbar buttons to show on AoT window, when meeting is in prejoin screen.
+ */
+export const AOT_PREJOIN_BUTTONS = [ 'microphone', 'camera' ];
