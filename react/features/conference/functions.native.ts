@@ -11,7 +11,7 @@ export * from './functions.any';
  * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
  * {@code getState} function to be used to retrieve the state
  * features/base/config.
- * @returns {boolean}.
+ * @returns {boolean}
  */
 export function getDisablePolls(stateful: IStateful) {
     const state = toState(stateful)['features/base/config'];

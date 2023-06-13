@@ -129,7 +129,7 @@
     "@babel/plugin-proposal-export-default-from": "7.16.0",
     "@babel/preset-env": "7.16.0",
     "@babel/preset-react": "7.16.0",
-    "@jitsi/eslint-config": "4.1.5",
+    "@jitsi/eslint-config": "4.1.10",
     "@types/amplitude-js": "8.16.2",
     "@types/audioworklet": "0.0.29",
     "@types/dom-screen-wake-lock": "1.0.1",
@@ -159,7 +159,7 @@
     "css-loader": "3.6.0",
     "eslint": "8.40.0",
     "eslint-plugin-import": "2.27.5",
-    "eslint-plugin-jsdoc": "37.0.3",
+    "eslint-plugin-jsdoc": "46.2.6",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-native": "4.0.0",
     "eslint-plugin-typescript-sort-keys": "2.3.0",
@@ -184,8 +184,8 @@
     }
   },
   "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=7.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "license": "Apache-2.0",
   "scripts": {

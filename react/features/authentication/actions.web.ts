@@ -39,7 +39,7 @@ export function cancelWaitForOwner() {
  * Hides a authentication dialog where the local participant
  * should authenticate.
  *
- * @returns {Function}.
+ * @returns {Function}
  */
 export function hideLoginDialog() {
     return hideDialog(LoginDialog);
@@ -53,7 +53,7 @@ export function hideLoginDialog() {
  * @param {string} room - The room name.
  * @param {Function} onAuthNow - The function to be invoked when external authentication.
  *
- * @returns {Function}.
+ * @returns {Function}
  */
 export function openAuthDialog(room: String, onAuthNow?: Function) {
     return openDialog(WaitForOwnerDialog, {

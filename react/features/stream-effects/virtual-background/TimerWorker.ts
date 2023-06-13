@@ -13,8 +13,7 @@ export const SET_TIMEOUT = 1;
 
 /**
  * CLEAR_TIMEOUT constant is used to clear the interval and it is set in
- * the id property of the request.data property.
- *
+ * the id property of the request.data property
  * {
  *      id: CLEAR_TIMEOUT
  * }.
@@ -22,8 +21,7 @@ export const SET_TIMEOUT = 1;
 export const CLEAR_TIMEOUT = 2;
 
 /**
- * TIMEOUT_TICK constant is used as response and it is set in the id property.
- *
+ * TIMEOUT_TICK constant is used as response and it is set in the id property
  * {
  *      id: TIMEOUT_TICK
  * }.
