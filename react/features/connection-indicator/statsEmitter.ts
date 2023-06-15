@@ -6,10 +6,13 @@ import {
 } from '../base/lib-jitsi-meet';
 
 /**
- * Contains all the callbacks to be notified when stats are updated
+ * Contains all the callbacks to be notified when stats are updated.
+ *
+ * ```
  * {
  *     userId: Function[]
- * }.
+ * }
+ * ```
  */
 const subscribers: any = {};
 
