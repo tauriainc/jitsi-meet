@@ -33,7 +33,7 @@
         "lodash": "4.17.21",
         "moment": "2.29.4",
         "moment-duration-format": "2.2.2",
-        "optional-require": "1.0.3",
+        "optional-require": "1.1.8",
         "promise.allsettled": "1.0.4",
         "punycode": "2.1.1",
         "react-emoji-render": "1.2.4",
